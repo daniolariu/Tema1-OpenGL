@@ -1,143 +1,137 @@
 ﻿#include "glos.h"
 #include "gl.h"
+#include "glu.h"
 #include "glaux.h"
+#include "math.h"
+#include "glut.h"
 
-static GLfloat x = 0;
-static GLfloat y = 0;
-static GLfloat z = -5.0;
-static GLfloat originX = 0;
+float rotationAngleX = 0.0f;
+float rotationAngleY = 0.0f;
 
-void myInit() {
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-}
+GLfloat translateX = 0.0f;
+GLfloat translateY = 0.0f;
+GLfloat translateZ = 0.0f;
+GLfloat rotateAngle = 0.0f;
 
-void CALLBACK MutaSus()
-{
-    y = y + 1;
-}
+GLfloat vertices[][3] = {
+    {0, 1, 0},
+    {1, -1, 1},
+    {-1, -1, 1},
+    {-1, -1, -1},
+    {1, -1, -1}
+};
 
-void CALLBACK MutaJos()
-{
-    y = y - 1;
-}
+GLint edges[][2] = {
+    {0, 1},
+    {0, 2},
+    {0, 3},
+    {0, 4},
+    {1, 2},
+    {2, 3},
+    {3, 4},
+    {4, 1},
+};
 
-void CALLBACK MutaStanga()
-{
-    x = x - 1;
-}
+void draw_pyramid() {
+    glTranslatef(translateX, translateY, translateZ);
 
-void CALLBACK MutaDreapta()
-{
-    x = x + 1;
-}
+    glPushMatrix();
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_LINES);
+    for (int i = 0; i < 2; ++i) {
+        glVertex3fv(vertices[edges[i][0]]);
+        glVertex3fv(vertices[edges[i][1]]);
+    }
+    glVertex3fv(vertices[edges[4][0]]);
+    glVertex3fv(vertices[edges[4][1]]);
 
-void CALLBACK MutaInainte()
-{
-    z = z - 1;
-}
-
-void CALLBACK MutaInapoi()
-{
-    z = z + 1;
-}
-
-void drawOrigin() {
-    glPointSize(5.0);
-    glColor3f(0.0f, 0.0f, 1.0f);
-
-    glBegin(GL_POINTS);
-    glVertex3f(originX, 0.0f, 0.0f);
     glEnd();
-}
-
-void updateOriginX(GLsizei w, GLsizei h) {
-    originX = 0;
-}
-
-void CALLBACK display()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-    glLoadIdentity();                                 
-    glTranslatef(x, y, z);                          
 
     glEnable(GL_LINE_STIPPLE);
-    glLineStipple(1, 0x00FF);
-
-    glBegin(GL_LINE_LOOP);
-    {
-        glColor3f(0.5f, 0.0f, 1.0f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-    }
-    glEnd();
-
+    glLineStipple(1, 0xF0F0);
     glBegin(GL_LINES);
-    {
-        glColor3f(0.0f, 0.7f, 1.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(1.0f, -1.0f, -1.0f);
-
-        glColor3f(1.0f, 1.0f, 0.5f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
+    for (int i = 2; i < 4; ++i) {
+        glVertex3fv(vertices[edges[i][0]]);
+        glVertex3fv(vertices[edges[i][1]]);
+    }
+    for (int i = 5; i < 8; ++i) {
+        glVertex3fv(vertices[edges[i][0]]);
+        glVertex3fv(vertices[edges[i][1]]);
     }
     glEnd();
-
     glDisable(GL_LINE_STIPPLE);
-
-    glBegin(GL_LINE_LOOP);
-    {
-        glColor3f(1.0f, 0.0f, 0.3f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 1.0f);
-
-
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-    }
-    glEnd();
-
-    drawOrigin();
-
-    glFlush();
+    glPopMatrix();
 }
 
-void CALLBACK myReshape(GLsizei w, GLsizei h)
-{
-    if (!h) {
-        return;
-    }
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -4.0f);
+    glRotatef(rotationAngleX, 0.0f, 1.0f, 0.0f);
+    glRotatef(rotationAngleY, 0.0f, 1.0f, 0.0f);
+    draw_pyramid();
+    glutSwapBuffers();
+
+}
+
+void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    if (w <= h) {
-        glFrustum(-2.0, 2.0, -2.0 * (GLfloat)h / (GLfloat)w, 2.0 * (GLfloat)h / (GLfloat)w, 2.0, 10.0);
-    }
-    else {
-        glFrustum(-2.0 * (GLfloat)w / (GLfloat)h, 2.0 * (GLfloat)w / (GLfloat)h, -2.0, 2.0, 2.0, 10.0);
-    }
+    gluPerspective(45, (double)w / (double)h, 0.1, 50.0);
     glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+//mutare
+void keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+    case 'w':
+        translateY += 0.1f;
+        break;
+    case 's':
+        translateY -= 0.1f;
+        break;
+    case 'a':
+        translateX -= 0.1f;
+        break;
+    case 'd':
+        translateX += 0.1f;
+        break;
+    case 'q':
+        translateZ += 0.1f;
+        break;
+    case 'e':
+        translateZ -= 0.1f;
+        break;
 
-    updateOriginX(w, h);
+
+
+    case 't':
+        rotationAngleX += 5.0f;
+        break;
+    case 'g':
+        rotationAngleX -= 5.0f;
+        break;
+    case 'f':
+        rotationAngleY -= 5.0f;
+        break;
+    case 'h':
+        rotationAngleY += 5.0f;
+        break;
+    }
+    glutPostRedisplay();
 }
 
-int main(int argc, char** argv)
-{
-    auxInitDisplayMode(AUX_SINGLE | AUX_RGB | AUX_DEPTH);
-    auxInitPosition(0, 0, 800, 600);
-    auxInitWindow("Piramida 3D");
-    myInit();
-    auxKeyFunc(AUX_LEFT, MutaStanga);
-    auxKeyFunc(AUX_RIGHT, MutaDreapta);
-    auxKeyFunc(AUX_UP, MutaSus);
-    auxKeyFunc(AUX_DOWN, MutaJos);
-    auxKeyFunc(AUX_W, MutaInainte);
-    auxKeyFunc(AUX_S, MutaInapoi);
-
-    auxReshapeFunc(myReshape);
-    auxMainLoop(display);
-    return(0);
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(800, 600);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("OpenGL Wireframe Square Pyramid");
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutKeyboardFunc(keyboard);
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glutMainLoop();
 }
